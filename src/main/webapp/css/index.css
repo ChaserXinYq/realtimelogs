@@ -1,0 +1,11 @@
+#open_pre_environment {
+    position: absolute;
+    margin-top: 20%;
+    margin-left: 35%;
+}
+
+#open_production_environment {
+    position: absolute;
+    margin-top: 20%;
+    margin-left: 55%;
+}

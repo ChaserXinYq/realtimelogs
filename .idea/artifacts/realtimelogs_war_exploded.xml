@@ -1,0 +1,29 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="realtimelogs:war exploded">
+    <output-path>$PROJECT_DIR$/target/realtimelog</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <exploded>true</exploded>
+        <module>realtimelogs</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="realtimelogs" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.3.3" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-core:2.3.3" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.3.3" />
+          <element id="library" level="project" name="Maven: org.jvnet.hudson:trilead-ssh2:build212-hudson-6" />
+        </element>
+      </element>
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/target/realtimelog/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="javaee-facet-resources" facet="realtimelogs/web/Web" />
+    </root>
+  </artifact>
+</component>
