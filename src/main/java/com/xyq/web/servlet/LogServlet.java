@@ -80,7 +80,6 @@ public class LogServlet extends BaseServlet {
             br = new BufferedReader(new InputStreamReader(is));
             String s = br.readLine();
             countLogLines = Integer.parseInt(s.split(" ")[0]);
-            System.out.println(countLogLines);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -148,7 +147,7 @@ public class LogServlet extends BaseServlet {
             for (int i = 0; i < count; i++) {
                 br.readLine();
             }
-            for(int j = count; count < count + 1000; count++) {
+            for(int j = count; j < count + 1000; j++) {
                 if((s = br.readLine()) == null) {
                     break;
                 }
@@ -158,6 +157,7 @@ public class LogServlet extends BaseServlet {
             String format1 = dateFormat.format(dateEnd);
             System.out.println(format1);*/
             logAndPageCount.setLog(string);
+            logAndPageCount.setCurrentPage(pageNum);
             logAndPageCount.setPageCount(pageCount);
             //最后将LogAndPageCount转换为json，写回前端
             writeValue(logAndPageCount,resp);

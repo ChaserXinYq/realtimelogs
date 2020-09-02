@@ -9,6 +9,7 @@
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/logView.css"/>
 
     <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
     <script src="js/jquery-3.3.1.js"></script>
@@ -22,15 +23,99 @@
         var ip = getParameter("ip");
         var logName = getParameter("logName");
         var pageNum = 1;//首次加载默认第一页
-        $.post("log/viewLog",{service:service,ip:ip,logName:logName,pageNum:pageNum},function (data) {
-            //data:["log":"","pageCount":]
-
-        });
+        load(service, ip, logName, pageNum)
     });
+
+    function load(service, ip, logName, pageNum) {
+        $.post("log/viewLog", {service: service, ip: ip, logName: logName, pageNum: pageNum}, function (data) {
+            $("#str").html(data["log"]);
+            //data:["log":"","pageCount":]
+            //创建首页
+            var firstPage = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + 1 + ' )"><a href="javascript:void(0)">首页</a></li>';
+            //创建上一页
+            var beforeNum = data["currentPage"] - 1;
+            if (beforeNum <= 0) {
+                beforeNum = 1;
+            }
+            var beforePage = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + beforeNum + ' )"><a href="javascript:void(0)" aria-label="Previous">\n' +
+                '                <span aria-hidden="true">上一页</span>\n' +
+                '            </a></li>'
+            var lis = "";
+            lis = lis + firstPage + beforePage;
+            //创建下一页
+            var lastNum = data["currentPage"] + 1;
+            if (lastNum >= data["totalPage"]) {
+                lastNum = data["pageCount"];
+            }
+            var nextPage = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + lastNum + ' )"><a href="javascript:void(0)" aria-label="Next">\n' +
+                '                <span aria-hidden="true">下一页</span>\n' +
+                '            </a></li>'
+            //创建末页
+            var lastPage = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + data["pageCount"] + ' )"><a href="javascript:void(0)">末页</a></li>'
+            //前五后四页码展示
+            //定义开始位置begin，结束为止end
+            var begin;//开始位置
+            var end;//结束位置
+            //显示10个页码
+            if (data["pageCount"] <= 10) {
+                //总页码不大于10也
+                begin = 1;
+                end = data["pageCount"];
+            } else {
+                //总页码超过10
+                begin = data["currentPage"] - 5;
+                end = data["currentPage"] + 4;
+                //如果前边不够5个，后边补齐10个
+                if (begin < 1) {
+                    begin = 1;
+                    end = 10;
+                }
+                //如果后边不够4个，前边补齐
+                if (end > data["pageCount"]) {
+                    end = data["pageCount"];
+                    begin = end - 9;
+                }
+            }
+            for (var i = begin; i <= end; i++) {
+                //当前页码是否等于i
+                if (data["currentPage"] === i) {
+                    var li = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + i + ' )"><a href="javascript:void(0)">' + i + '</a></li>';
+                } else {
+                    //创建页码的li
+                    var li = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + i + ' )"><a href="javascript:void(0)">' + i + '</a></li>';
+                }
+                //拼接字符串
+                lis += li;
+            }
+            lis = lis + nextPage + lastPage;
+            $("#pageWrapper").html(lis);
+        });
+    }
 </script>
 <body>
 <div id="str">
 
 </div>
+<nav id="page" aria-label="Page navigation">
+    <ul id="pageWrapper" class="pagination">
+        <li><a href="#">首页</a></li>
+        <li>
+            <a href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        <li><a href="#">1</a></li>
+        <li><a href="#">2</a></li>
+        <li><a href="#">3</a></li>
+        <li><a href="#">4</a></li>
+        <li><a href="#">5</a></li>
+        <li>
+            <a href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        <li><a href="#">末页</a></li>
+    </ul>
+</nav>
 </body>
 </html>

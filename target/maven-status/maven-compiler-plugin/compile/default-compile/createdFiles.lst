@@ -7,3 +7,4 @@ com\xyq\web\domain\ConnAndPath.class
 com\xyq\web\domain\User.class
 com\xyq\web\servlet\LogServlet.class
 com\xyq\web\domain\ResultInfo.class
+com\xyq\web\domain\LogAndPageCount.class
