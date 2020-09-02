@@ -2,6 +2,7 @@ package com.xyq.web.servlet;
 
 import com.trilead.ssh2.*;
 import com.xyq.web.domain.ConnAndPath;
+import com.xyq.web.domain.LogAndPageCount;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -115,6 +116,8 @@ public class LogServlet extends BaseServlet {
         SSHServlet sshServlet = new SSHServlet();
         //获取连接后的对象connAndPath
         ConnAndPath connAndPath = sshServlet.SSH(ip);
+        //创建封装了日志和日志页数的对象，用于写回前端
+        LogAndPageCount logAndPageCount = new LogAndPageCount();
         InputStream is = null;
         InputStreamReader reader = null;
         BufferedReader br = null;
@@ -136,21 +139,28 @@ public class LogServlet extends BaseServlet {
             //总页数
             int pageCount = (countLogLines / 1000) + 1;
             String s = "";
-            //int count = (pageNum - 1) * 1000;
+            int count = (pageNum - 1) * 1000;
             StringBuilder string = new StringBuilder();
             /*Date dateBegin = new Date();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             String format = dateFormat.format(dateBegin);
             System.out.println(format);*/
-            for (int i = 0; i < 1000; i++) {
-                s = br.readLine();
-                string.append(s == null ? "" : s).append("</br>");
+            for (int i = 0; i < count; i++) {
+                br.readLine();
+            }
+            for(int j = count; count < count + 1000; count++) {
+                if((s = br.readLine()) == null) {
+                    break;
+                }
+                string.append(s).append("</br>");
             }
             /*Date dateEnd = new Date();
             String format1 = dateFormat.format(dateEnd);
             System.out.println(format1);*/
-            //最后将String转换为json，写回前端
-            writeValue(string,resp);
+            logAndPageCount.setLog(string);
+            logAndPageCount.setPageCount(pageCount);
+            //最后将LogAndPageCount转换为json，写回前端
+            writeValue(logAndPageCount,resp);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

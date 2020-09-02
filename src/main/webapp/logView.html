@@ -23,7 +23,8 @@
         var logName = getParameter("logName");
         var pageNum = 1;//首次加载默认第一页
         $.post("log/viewLog",{service:service,ip:ip,logName:logName,pageNum:pageNum},function (data) {
-            $("#str").html(data);
+            //data:["log":"","pageCount":]
+
         });
     });
 </script>
