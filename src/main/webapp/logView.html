@@ -31,7 +31,7 @@
             $("#str").html(data["log"]);
             //data:["log":"","pageCount":]
             //创建首页
-            var firstPage = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + 1 + ' )"><a href="javascript:void(0)">首页</a></li>';
+            var firstPage = '<li onclick="load(' + service + ',' + ip + ',' + logName + ',' + 1 + ' )"><a href="javascript:void(0)">首页</a></li>';
             //创建上一页
             var beforeNum = data["currentPage"] - 1;
             if (beforeNum <= 0) {

@@ -1,5 +1,10 @@
 package com.xyq.web.servlet;
 
+/**
+ * @author：xinyingquan
+ * @WriteTime:2020-9-1
+ */
+
 import com.trilead.ssh2.*;
 import com.xyq.web.domain.ConnAndPath;
 import com.xyq.web.domain.LogAndPageCount;
@@ -11,10 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Vector;
 
 @WebServlet("/log/*")
@@ -22,9 +24,10 @@ public class LogServlet extends BaseServlet {
 
     /**
      * 功能：通过服务名称+ip获取对应的log文件名称列表
-     *
      * @param req
      * @param resp
+     * @author：xinyingquan
+     * @WriteTime:2020-9-1
      */
     public void getLogsList(HttpServletRequest req, HttpServletResponse resp) {
         String ip = req.getParameter("ip");
@@ -61,12 +64,16 @@ public class LogServlet extends BaseServlet {
             }
         }
         //最后将list转换为json，写回前端
-            writeValue(list,resp);
+        writeValue(list, resp);
     }
 
     /**
-     * 通过wc -l -日志名称获取要读日志的行数
+     * 功能：通过linux命令获取日志总行数，用于分页和读取日志
+     * @param conn
+     * @param filename
      * @return
+     * @author：xinyingquan
+     * @WriteTime:2020-9-2
      */
     public int countLogLines(Connection conn, String filename) {
         InputStream is = null;
@@ -75,7 +82,7 @@ public class LogServlet extends BaseServlet {
         int countLogLines = 0;
         try {
             session = conn.openSession();
-            session.execCommand("wc -l" +" "+ filename);
+            session.execCommand("wc -l" + " " + filename);
             is = new StreamGobbler(session.getStdout());
             br = new BufferedReader(new InputStreamReader(is));
             String s = br.readLine();
@@ -84,13 +91,13 @@ public class LogServlet extends BaseServlet {
             e.printStackTrace();
         } finally {
             try {
-                if(br != null) {
+                if (br != null) {
                     br.close();
                 }
-                if(is != null) {
+                if (is != null) {
                     is.close();
                 }
-                if(session != null) {
+                if (session != null) {
                     session.close();
                 }
             } catch (IOException e) {
@@ -101,15 +108,61 @@ public class LogServlet extends BaseServlet {
     }
 
     /**
-     * 功能：通过服务名 + IP + 日志名称获取整个日志内容
-     *
+     * 功能：通过linux命令输出指定begin-end行日志，并通过io流获取
+     * @param conn
+     * @param filename
+     * @param beginLine
+     * @param endLine
+     * @return
+     * @author：xinyingquan
+     * @WriteTime:2020-9-3
+     */
+    public StringBuilder getLog(Connection conn, String filename, int beginLine, int endLine) {
+        InputStream is = null;
+        BufferedReader br = null;
+        Session session = null;
+        StringBuilder log = new StringBuilder();
+        try {
+            session = conn.openSession();
+            session.execCommand("sed -n" + "  '" + beginLine + "," + endLine + "p" + "' " + filename);
+            is = new StreamGobbler(session.getStdout());
+            br = new BufferedReader(new InputStreamReader(is));
+            String s = "";
+            while((s = br.readLine()) != null) {
+                log.append(s).append("</br>");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (br != null) {
+                    br.close();
+                }
+                if (is != null) {
+                    is.close();
+                }
+                if (session != null) {
+                    session.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return log;
+    }
+
+    /**
+     * 功能：通过服务名 + IP + 日志名称 + 页数获取日志内容
+     * 读取调用脚本
      * @param req
-     * @param resp 第一版本：目前是再次连接。可以进行优化，将选择服务时进行的连接直接拿来用，暂不优化
+     * @param resp
+     * @author：xinyingquan
+     * @WriteTime:2020-9-1
      */
     public void viewLog(HttpServletRequest req, HttpServletResponse resp) {
         //获取前端传过来的ip,serviceName,logName,第几页
         String ip = req.getParameter("ip");
-        String service= req.getParameter("service");
+        String service = req.getParameter("service");
         String logName = req.getParameter("logName");
         int pageNum = Integer.parseInt(req.getParameter("pageNum"));
         SSHServlet sshServlet = new SSHServlet();
@@ -137,14 +190,13 @@ public class LogServlet extends BaseServlet {
             int countLogLines = countLogLines(conn, filename);
             //总页数
             int pageCount = (countLogLines / 1000) + 1;
-            String s = "";
-            int count = (pageNum - 1) * 1000;
-            StringBuilder string = new StringBuilder();
-            /*Date dateBegin = new Date();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-            String format = dateFormat.format(dateBegin);
-            System.out.println(format);*/
-            for (int i = 0; i < count; i++) {
+            //起始行
+            int beginLine = (pageNum - 1) * 1000 + 1;
+            //结束行
+            int endLine = beginLine + 1000;
+            StringBuilder log = getLog(conn, filename, beginLine, endLine);
+            //优化：使用脚本按指定行读取，不需要做前面读
+            /*for (int i = 0; i < count; i++) {
                 br.readLine();
             }
             for(int j = count; j < count + 1000; j++) {
@@ -152,35 +204,32 @@ public class LogServlet extends BaseServlet {
                     break;
                 }
                 string.append(s).append("</br>");
-            }
-            /*Date dateEnd = new Date();
-            String format1 = dateFormat.format(dateEnd);
-            System.out.println(format1);*/
-            logAndPageCount.setLog(string);
+            }*/
+            logAndPageCount.setLog(log);
             logAndPageCount.setCurrentPage(pageNum);
             logAndPageCount.setPageCount(pageCount);
             //最后将LogAndPageCount转换为json，写回前端
-            writeValue(logAndPageCount,resp);
+            writeValue(logAndPageCount, resp);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
-                if(br != null) {
+                if (br != null) {
                     br.close();
                 }
-                if(reader != null) {
+                if (reader != null) {
                     reader.close();
                 }
-                if(is != null) {
+                if (is != null) {
                     is.close();
                 }
-                if(conn != null) {
+                if (conn != null) {
                     conn.close();
                 }
-                if(sftPv3Client != null) {
+                if (sftPv3Client != null) {
                     sftPv3Client.close();
                 }
-            }catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

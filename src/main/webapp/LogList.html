@@ -27,8 +27,8 @@
             var ddStr = "";
             var regExp = /^.*log.*$/
             for (var a = 0; a < data.length; a++) {
-                if(regExp.test(data[a])) {
-                    var str = '<a href="logView.html?service=' + service + '&ip=' + ip + '&logName=' + data[a] + '">'+data[a]+'</a>' + '\n'
+                if (regExp.test(data[a])) {
+                    var str = '<a href="logView.html?service=' + service + '&ip=' + ip + '&logName=' + data[a] + '">' + data[a] + '</a>' + '\n'
                     ddStr += str;
                 }
             }

@@ -1,4 +1,8 @@
 package com.xyq.web.servlet;
+/**
+ * @author：xinyingquan
+ * @WriteTime:2020-9-1
+ */
 
 import com.xyq.web.domain.ResultInfo;
 import com.xyq.web.domain.User;
