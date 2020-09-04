@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>login</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+    <script src="js/jquery-3.3.1.js"></script>
+    <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+    <script src="js/bootstrap.min.js"></script>
+
+</head>
+<script>
+    $(function () {
+        $("#btn_submit").click(function () {
+            $.post("user/login",$("#login-form").serialize(),function (data) {
+                //data:[flag:"",obj:"",errorMsg:""]，if判断登录是否成功，再进行操作
+                if(true === data["flag"]) {
+                    location.href = "environment.html"
+                } else {
+                    alert(data["errorMsg"])
+                }
+            });
+        });
+    });
+</script>
+<body>
+    <form class="form-horizontal" id="login-form">
+        <div class="form-group">
+            <label for="Username" class="col-sm-2 control-label">Username</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" name="username" id="Username" placeholder="Username">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="Password" class="col-sm-2 control-label">Password</label>
+            <div class="col-sm-4">
+                <input type="password" class="form-control" name="password" id="Password" placeholder="Password">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button id="btn_submit" type="button" class="btn btn-default">Sign in</button>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

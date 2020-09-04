@@ -19,9 +19,10 @@ public class SSHServlet extends HttpServlet {
         //加载配置文件进内存
         InputStreamReader reader = null;
         BufferedReader br = null;
-        File filename = new File("src\\main\\resources\\real-time-log");
+        InputStream is = null;
         try {
-            reader = new InputStreamReader(new FileInputStream(filename));
+            is = SSHServlet.class.getClassLoader().getResourceAsStream("real-time-log");
+            reader = new InputStreamReader(is);
             br = new BufferedReader(reader);
             String i = "";
             while ((i = br.readLine()) != null) {
@@ -52,6 +53,9 @@ public class SSHServlet extends HttpServlet {
                 }
                 if (reader != null) {
                     reader.close();
+                }
+                if (is != null) {
+                    is.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();

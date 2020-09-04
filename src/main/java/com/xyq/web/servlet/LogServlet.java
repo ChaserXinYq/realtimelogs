@@ -21,9 +21,9 @@ import java.util.Vector;
 
 @WebServlet("/log/*")
 public class LogServlet extends BaseServlet {
-
     /**
      * 功能：通过服务名称+ip获取对应的log文件名称列表
+     *
      * @param req
      * @param resp
      * @author：xinyingquan
@@ -69,6 +69,7 @@ public class LogServlet extends BaseServlet {
 
     /**
      * 功能：通过linux命令获取日志总行数，用于分页和读取日志
+     *
      * @param conn
      * @param filename
      * @return
@@ -109,6 +110,7 @@ public class LogServlet extends BaseServlet {
 
     /**
      * 功能：通过linux命令输出指定begin-end行日志，并通过io流获取
+     *
      * @param conn
      * @param filename
      * @param beginLine
@@ -117,19 +119,27 @@ public class LogServlet extends BaseServlet {
      * @author：xinyingquan
      * @WriteTime:2020-9-3
      */
-    public StringBuilder getLog(Connection conn, String filename, int beginLine, int endLine) {
+    public StringBuilder getLog(Connection conn, String filename, int beginLine, int endLine, int countLogLines) {
         InputStream is = null;
         BufferedReader br = null;
         Session session = null;
         StringBuilder log = new StringBuilder();
         try {
             session = conn.openSession();
-            session.execCommand("sed -n" + "  '" + beginLine + "," + endLine + "p" + "' " + filename);
+            //sed -n "起始行,结束行p" 文件路径 | awk '{gsub(/</,"\\&lt");print $0}' | awk '{gsub(/>/,"\\&gt");print $0}'
+            session.execCommand("sed -n" + " '" + beginLine + "," + endLine + "p" + "' " + filename + " | awk '{gsub(/</,\"\\\\&lt\");print $0}' | awk '{gsub(/>/,\"\\\\&gt\");print $0}'");
             is = new StreamGobbler(session.getStdout());
             br = new BufferedReader(new InputStreamReader(is));
             String s = "";
-            while((s = br.readLine()) != null) {
-                log.append(s).append("</br>");
+            for (int i = beginLine; i <= endLine; i++) {
+                if (i <= countLogLines) {
+                    s = br.readLine();
+                    if (s == null) {
+                        log.append(" ").append("<br/>");
+                    } else {
+                        log.append(s).append("<br/>");
+                    }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -154,6 +164,7 @@ public class LogServlet extends BaseServlet {
     /**
      * 功能：通过服务名 + IP + 日志名称 + 页数获取日志内容
      * 读取调用脚本
+     *
      * @param req
      * @param resp
      * @author：xinyingquan
@@ -189,12 +200,12 @@ public class LogServlet extends BaseServlet {
             //调用countLogLines获取要读取日志文件的总行数,用来分页
             int countLogLines = countLogLines(conn, filename);
             //总页数
-            int pageCount = (countLogLines / 1000) + 1;
+            int pageCount = (countLogLines / 500) + 1;
             //起始行
-            int beginLine = (pageNum - 1) * 1000 + 1;
+            int beginLine = (pageNum - 1) * 500 + 1;
             //结束行
-            int endLine = beginLine + 1000;
-            StringBuilder log = getLog(conn, filename, beginLine, endLine);
+            int endLine = beginLine + 499;
+            StringBuilder log = getLog(conn, filename, beginLine, endLine, countLogLines);
             //优化：使用脚本按指定行读取，不需要做前面读
             /*for (int i = 0; i < count; i++) {
                 br.readLine();
