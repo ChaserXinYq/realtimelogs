@@ -31,27 +31,27 @@
             $("#str").html(data["log"]);
             //data:["log":"","pageCount":]
             //创建首页
-            var firstPage = '<li onclick="load(' + service + ',' + ip + ',' + logName + ',' + 1 + ' )"><a href="javascript:void(0)">首页</a></li>';
+            var firstPage = '<li onclick="load(\''+service+'\',\'' + ip + '\',\'' + logName + '\',\'' + 1 + '\')"><a href="javascript:void(0)">首页</a></li>';
             //创建上一页
             var beforeNum = data["currentPage"] - 1;
             if (beforeNum <= 0) {
                 beforeNum = 1;
             }
-            var beforePage = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + beforeNum + ' )"><a href="javascript:void(0)" aria-label="Previous">\n' +
+            var beforePage = '<li onclick="load(\''+service+'\',\'' + ip + '\',\'' + logName + '\',\'' + beforeNum + '\')"><a href="javascript:void(0)" aria-label="Previous">\n' +
                 '                <span aria-hidden="true">上一页</span>\n' +
                 '            </a></li>'
             var lis = "";
             lis = lis + firstPage + beforePage;
             //创建下一页
             var lastNum = data["currentPage"] + 1;
-            if (lastNum >= data["totalPage"]) {
+            if (lastNum >= data["pageCount"]) {
                 lastNum = data["pageCount"];
             }
-            var nextPage = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + lastNum + ' )"><a href="javascript:void(0)" aria-label="Next">\n' +
+            var nextPage = '<li onclick="load(\''+service+'\',\'' + ip + '\',\'' + logName + '\',\'' + lastNum + '\')"><a href="javascript:void(0)" aria-label="Next">\n' +
                 '                <span aria-hidden="true">下一页</span>\n' +
                 '            </a></li>'
             //创建末页
-            var lastPage = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + data["pageCount"] + ' )"><a href="javascript:void(0)">末页</a></li>'
+            var lastPage = '<li onclick="load(\''+service+'\',\'' + ip + '\',\'' + logName + '\',\'' + data["pageCount"] + '\')"><a href="javascript:void(0)">末页</a></li>'
             //前五后四页码展示
             //定义开始位置begin，结束为止end
             var begin;//开始位置
@@ -79,10 +79,10 @@
             for (var i = begin; i <= end; i++) {
                 //当前页码是否等于i
                 if (data["currentPage"] === i) {
-                    var li = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + i + ' )"><a href="javascript:void(0)">' + i + '</a></li>';
+                    var li = '<li onclick="load(\''+service+'\',\'' + ip + '\',\'' + logName + '\',\'' + i + '\')"><a href="javascript:void(0)">' + i + '</a></li>';
                 } else {
                     //创建页码的li
-                    var li = '<li onclick="load(' + service + ',' + ip + ',' + logName + ', ' + i + ' )"><a href="javascript:void(0)">' + i + '</a></li>';
+                    var li = '<li onclick="load(\''+service+'\',\'' + ip + '\',\'' + logName + '\',\'' + i + '\')"><a href="javascript:void(0)">' + i + '</a></li>';
                 }
                 //拼接字符串
                 lis += li;
