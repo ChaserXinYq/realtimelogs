@@ -6,8 +6,9 @@ package com.xyq.web.servlet;
  */
 
 import com.trilead.ssh2.*;
-import com.xyq.web.domain.ConnAndPath;
-import com.xyq.web.domain.LogAndPageCount;
+import com.xyq.web.domain.*;
+import com.xyq.web.service.LogService;
+import com.xyq.web.service.impl.LogServiceImpl;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -16,11 +17,112 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Vector;
+import java.util.*;
 
 @WebServlet("/log/*")
 public class LogServlet extends BaseServlet {
+
+    private LogService logService = new LogServiceImpl();
+
+    /**
+     * 功能：动态展示环境选择页面。获取所有环境名称
+     */
+    public void getEnvironmentList(HttpServletRequest req, HttpServletResponse resp) {
+        List<EnvironmentName> environmentNameList = logService.getEnvironmentName();
+        writeValue(environmentNameList, resp);
+    }
+
+    public void getServiceList(HttpServletRequest req, HttpServletResponse resp) {
+        String environmentName = req.getParameter("environmentName");
+        List<ServiceDetail> serviceDetailList = logService.getServiceDetail(environmentName);
+        writeValue(serviceDetailList, resp);
+    }
+
+    /**
+     * 功能：根据环境名分页展示获取所有对应更改环境名的所有信息
+     */
+    public void getServiceUpdateList(HttpServletRequest req, HttpServletResponse resp) {
+        ServiceDetailListAndPageShow serviceDetailListAndPageShow = new ServiceDetailListAndPageShow();
+        String environmentName = req.getParameter("environmentName");
+        String currentPage = req.getParameter("currentPage");
+        List<ServiceDetail> serviceDetailList = logService.getServiceUpdateDetail(environmentName, Integer.parseInt(currentPage));
+        int rows = logService.countServiceDetail(environmentName);
+        int pageCount = rows % 20 == 0 ? rows / 20 : rows /20 + 1;
+        serviceDetailListAndPageShow.setList(serviceDetailList);
+        serviceDetailListAndPageShow.setCurrentPage(Integer.parseInt(currentPage));
+        serviceDetailListAndPageShow.setPageCount(pageCount);
+        writeValue(serviceDetailListAndPageShow, resp);
+    }
+
+    /**
+     * 功能：展示所有服务信息，用于前端修改
+     */
+    public void getAllServiceDetail(HttpServletRequest req, HttpServletResponse resp) {
+        List<ServiceDetail> allServiceDetailList = logService.getAllServiceDetail();
+        writeValue(allServiceDetailList, resp);
+    }
+
+    /**
+     * 根据serviceName + ip修改服务信息
+     */
+    public void updateServiceDetail(HttpServletRequest req, HttpServletResponse resp) {
+        String preServiceName = req.getParameter("preServiceName");
+        String preIp = req.getParameter("preIp");
+        String serviceName = req.getParameter("serviceName");
+        String ip = req.getParameter("ip");
+        String port = req.getParameter("port");
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+        String directory = req.getParameter("directory");
+        String environmentName = req.getParameter("environmentName");
+        ServiceDetail service = new ServiceDetail();
+        service.setServiceName(serviceName);
+        service.setIp(ip);
+        service.setPort(Integer.parseInt(port));
+        service.setUsername(username);
+        service.setPassword(password);
+        service.setDirectory(directory);
+        service.setEnvironmentName(environmentName);
+        System.out.println(preServiceName);
+        System.out.println(preIp);
+        System.out.println(service);
+        int rows = logService.updateServiceDetail(preServiceName, preIp, service);
+        writeValue(rows, resp);
+    }
+
+    /**
+     * 增加服务信息
+     */
+    public void insertServiceDetail(HttpServletRequest req, HttpServletResponse resp) {
+        String serviceName = req.getParameter("serviceName");
+        String ip = req.getParameter("ip");
+        String port = req.getParameter("port");
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+        String directory = req.getParameter("directory");
+        String environmentName = req.getParameter("environmentName");
+        ServiceDetail serviceDetail = new ServiceDetail();
+        serviceDetail.setServiceName(serviceName);
+        serviceDetail.setIp(ip);
+        serviceDetail.setPort(Integer.parseInt(port));
+        serviceDetail.setUsername(username);
+        serviceDetail.setPassword(password);
+        serviceDetail.setDirectory(directory);
+        serviceDetail.setEnvironmentName(environmentName);
+        int rows = logService.insertServiceDetail(serviceDetail);
+        writeValue(rows, resp);
+    }
+
+    /**
+     * 删除服务信息
+     */
+    public void deleteServiceDetail(HttpServletRequest req, HttpServletResponse resp) {
+        String serviceName = req.getParameter("serviceName");
+        String ip = req.getParameter("ip");
+        int rows = logService.deleteServiceDetail(serviceName, ip);
+        writeValue(rows, resp);
+    }
+
     /**
      * 功能：通过服务名称+ip获取对应的log文件名称列表
      *
@@ -33,7 +135,8 @@ public class LogServlet extends BaseServlet {
         String ip = req.getParameter("ip");
         String serviceName = req.getParameter("service");
         SSHServlet sshServlet = new SSHServlet();
-        ConnAndPath connAndPath = sshServlet.SSH(ip);
+        ConnAndPath connAndPath = sshServlet.SSH(ip, serviceName);
+        ArrayList<String> list = new ArrayList<>();
         //建立一个SFTP客户端
         SFTPv3Client sftPv3Client = null;
         try {
@@ -43,9 +146,8 @@ public class LogServlet extends BaseServlet {
         }
         //列出给定目录下的所有文件，并判断要展示的文件名称（日志）
         //指定的目录
-        String p = connAndPath.getPath();
-        ArrayList<String> list = new ArrayList<>();
-        String path = p + "/" + serviceName;
+        String p = connAndPath.getPath();///data/logs
+        String path = p + serviceName;
         Vector vector = null;
         try {
             if (sftPv3Client != null) {
@@ -53,6 +155,10 @@ public class LogServlet extends BaseServlet {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (sftPv3Client != null) {
+                sftPv3Client.close();
+            }
         }
         if (vector != null) {
             for (int i = 0; i < vector.size(); i++) {
@@ -78,6 +184,7 @@ public class LogServlet extends BaseServlet {
      */
     public int countLogLines(Connection conn, String filename) {
         InputStream is = null;
+        InputStreamReader ir = null;
         BufferedReader br = null;
         Session session = null;
         int countLogLines = 0;
@@ -85,7 +192,8 @@ public class LogServlet extends BaseServlet {
             session = conn.openSession();
             session.execCommand("wc -l" + " " + filename);
             is = new StreamGobbler(session.getStdout());
-            br = new BufferedReader(new InputStreamReader(is));
+            ir = new InputStreamReader(is);
+            br = new BufferedReader(ir);
             String s = br.readLine();
             countLogLines = Integer.parseInt(s.split(" ")[0]);
         } catch (IOException e) {
@@ -95,14 +203,25 @@ public class LogServlet extends BaseServlet {
                 if (br != null) {
                     br.close();
                 }
-                if (is != null) {
-                    is.close();
-                }
-                if (session != null) {
-                    session.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (ir != null) {
+                    ir.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (session != null) {
+                session.close();
             }
         }
         return countLogLines;
@@ -121,6 +240,7 @@ public class LogServlet extends BaseServlet {
      */
     public StringBuilder getLog(Connection conn, String filename, int beginLine, int endLine, int countLogLines) {
         InputStream is = null;
+        InputStreamReader ir = null;
         BufferedReader br = null;
         Session session = null;
         StringBuilder log = new StringBuilder();
@@ -129,7 +249,8 @@ public class LogServlet extends BaseServlet {
             //sed -n "起始行,结束行p" 文件路径 | awk '{gsub(/</,"\\&lt");print $0}' | awk '{gsub(/>/,"\\&gt");print $0}'
             session.execCommand("sed -n" + " '" + beginLine + "," + endLine + "p" + "' " + filename + " | awk '{gsub(/</,\"\\\\&lt\");print $0}' | awk '{gsub(/>/,\"\\\\&gt\");print $0}'");
             is = new StreamGobbler(session.getStdout());
-            br = new BufferedReader(new InputStreamReader(is));
+            ir = new InputStreamReader(is);
+            br = new BufferedReader(ir);
             String s = "";
             for (int i = beginLine; i <= endLine; i++) {
                 if (i <= countLogLines) {
@@ -148,15 +269,27 @@ public class LogServlet extends BaseServlet {
                 if (br != null) {
                     br.close();
                 }
-                if (is != null) {
-                    is.close();
-                }
-                if (session != null) {
-                    session.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (ir != null) {
+                    ir.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (session != null) {
+                session.close();
+            }
+            conn.close();
         }
         return log;
     }
@@ -178,71 +311,28 @@ public class LogServlet extends BaseServlet {
         int pageNum = Integer.parseInt(req.getParameter("pageNum"));
         SSHServlet sshServlet = new SSHServlet();
         //获取连接后的对象connAndPath
-        ConnAndPath connAndPath = sshServlet.SSH(ip);
+        ConnAndPath connAndPath = sshServlet.SSH(ip, service);
         //创建封装了日志和日志页数的对象，用于写回前端
         LogAndPageCount logAndPageCount = new LogAndPageCount();
-        InputStream is = null;
-        InputStreamReader reader = null;
-        BufferedReader br = null;
-        Connection conn = null;
-        SFTPv3Client sftPv3Client = null;
-        //远程打开文件，可以进行读
-        try {
-            //建立一个SFTP客户端
-            conn = connAndPath.getConn();
-            sftPv3Client = new SFTPv3Client(conn);
-            String p = connAndPath.getPath();
-            String filename = p + "/" + service + "/" + logName;
-            sftPv3Client.openFileRO(filename);
-            is = sftPv3Client.read(filename);
-            reader = new InputStreamReader(is);
-            br = new BufferedReader(reader);
-            //调用countLogLines获取要读取日志文件的总行数,用来分页
-            int countLogLines = countLogLines(conn, filename);
-            //总页数
-            int pageCount = (countLogLines / 500) + 1;
-            //起始行
-            int beginLine = (pageNum - 1) * 500 + 1;
-            //结束行
-            int endLine = beginLine + 499;
-            StringBuilder log = getLog(conn, filename, beginLine, endLine, countLogLines);
-            //优化：使用脚本按指定行读取，不需要做前面读
-            /*for (int i = 0; i < count; i++) {
-                br.readLine();
-            }
-            for(int j = count; j < count + 1000; j++) {
-                if((s = br.readLine()) == null) {
-                    break;
-                }
-                string.append(s).append("</br>");
-            }*/
-            logAndPageCount.setLog(log);
-            logAndPageCount.setCurrentPage(pageNum);
-            logAndPageCount.setPageCount(pageCount);
-            //最后将LogAndPageCount转换为json，写回前端
-            writeValue(logAndPageCount, resp);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (br != null) {
-                    br.close();
-                }
-                if (reader != null) {
-                    reader.close();
-                }
-                if (is != null) {
-                    is.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-                if (sftPv3Client != null) {
-                    sftPv3Client.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        Connection conn = connAndPath.getConn();
+        ;
+        String p = connAndPath.getPath();
+        String filename = p + service + "/" + logName;
+        //调用countLogLines获取要读取日志文件的总行数,用来分页
+        int countLogLines = countLogLines(conn, filename);
+        //总页数
+        int pageCount = (countLogLines / 500) + 1;
+        //起始行
+        int beginLine = (pageNum - 1) * 500 + 1;
+        //结束行
+        int endLine = beginLine + 499;
+        StringBuilder log = getLog(conn, filename, beginLine, endLine, countLogLines);
+        logAndPageCount.setLog(log);
+        logAndPageCount.setCurrentPage(pageNum);
+        logAndPageCount.setPageCount(pageCount);
+        //最后将LogAndPageCount转换为json，写回前端
+        writeValue(logAndPageCount, resp);
+        conn.close();
     }
 }
+

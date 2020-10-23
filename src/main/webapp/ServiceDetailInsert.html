@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>服务添加</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+    <script src="js/jquery-3.3.1.js"></script>
+    <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+    <script src="js/bootstrap.min.js"></script>
+
+</head>
+<script>
+    $(function () {
+        $("#insert").click(function () {
+            debugger;
+            var flag = confirm("您确定提交吗？");
+            if(flag) {
+                $.post("log/insertServiceDetail", $("#update_form").serialize(), function (data) {
+                    if(data > 0) {
+                        alert("添加成功!")
+                        location.href = "ServiceUpdateShow.html?environmentName="+$("#environmentName").val();
+                    } else {
+                        alert("添加失败!")
+                    }
+                });
+            }
+        });
+    })
+</script>
+<body>
+<form id="update_form">
+    serviceName<input id="serviceName" name="serviceName"/><br/>
+    ip<input id="ip" name="ip"/><br/>
+    port<input id="port" name="port"/><br/>
+    username<input id="username" name="username"/><br/>
+    password<input id="password" name="password"/><br/>
+    directory<input id="directory" name="directory"/><br/>
+    environmentName<input id="environmentName" name="environmentName"/><br/>
+    <button id="insert">添加</button>
+</form>
+</body>
+</html>

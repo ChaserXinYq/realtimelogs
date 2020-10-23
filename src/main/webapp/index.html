@@ -22,7 +22,7 @@
             $.post("user/login",$("#login-form").serialize(),function (data) {
                 //data:[flag:"",obj:"",errorMsg:""]，if判断登录是否成功，再进行操作
                 if(true === data["flag"]) {
-                    location.href = "environment.html"
+                    location.href = "EnvironmentSelect.html"
                 } else {
                     alert(data["errorMsg"])
                 }

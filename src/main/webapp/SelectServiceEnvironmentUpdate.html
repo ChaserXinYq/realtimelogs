@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>服务更新环境列表</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+    <script src="js/jquery-3.3.1.js"></script>
+    <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+    <script src="js/bootstrap.min.js"></script>
+</head>
+<script>
+    $(function () {
+        //发送请求，获取所有的环境名集合
+        $.post("log/getEnvironmentList", {}, function (data) {
+            var string = "";
+            //data:[{"environmentName":"pro"},{"environmentName":"pre"}]
+            for (var i = 0; i < data.length; i++) {
+                var s = '<a href="ServiceUpdateShow.html?environmentName='+data[i]["environmentName"]+' ">' + data[i]["environmentName"] + '</a><br/>'
+                string += s;
+            }
+            $("#wrapper").html(string);
+        });
+    })
+</script>
+<body>
+<div id="wrapper"></div>
+</body>
+</html>

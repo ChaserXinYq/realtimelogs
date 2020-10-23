@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>服务选择</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+    <script src="js/jquery-3.3.1.js"></script>
+    <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/getParameter.js"></script>
+
+</head>
+<body>
+
+<script>
+    $(function () {
+        var environmentName = getParameter("environmentName");
+        //发送请求，传递参数此页面为哪种环境
+        $.post("log/getServiceList", {environmentName: environmentName}, function (data) {
+            //data:[{"serviceName":"aihanle","ip":"10.215.255.87","port":55555,"username":"yunyao","password":"yunyao","directory":"/data/logs/","environmentName":"pro"}...]
+            var ss = ''
+            ''
+            //data:list集合，里面是serviceDetail
+            for (var i = 0; i < data.length; i++) {
+                var s = '<div class="dropdown">\n' +
+                    '        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu4" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">\n' +
+                    '            ' + data[i]["serviceName"] + '\n' +
+                    '            <span class="caret"></span>\n' +
+                    '        </button>\n' +
+                    '        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">\n' +
+                    '            <li><a href="LogList.html?service=' + data[i]["serviceName"] + '&ip=' + data[i]["ip"] + '">' + data[i]["ip"] + '</a></li>\n' +
+                    '        </ul>\n' +
+                    '    </div>';
+                ss += s;
+            }
+            $("#wrapper").html(ss);
+        });
+    })
+</script>
+<div id="wrapper">
+
+</div>
+</body>
+</html>

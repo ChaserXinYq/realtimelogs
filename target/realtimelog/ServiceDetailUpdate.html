@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>服务信息修改</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+    <script src="js/jquery-3.3.1.js"></script>
+    <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/getParameter.js"></script>
+</head>
+<script>
+    $(function () {
+        var serviceName = getParameter("serviceName");
+        var ip = getParameter("ip");
+        var port = getParameter("port");
+        var username = getParameter("username");
+        var password = getParameter("password");
+        var directory = getParameter("directory");
+        var environmentName = getParameter("environmentName");
+        $("#serviceName").val(serviceName);
+        $("#ip").val(ip);
+        $("#port").val(port);
+        $("#username").val(username);
+        $("#password").val(password);
+        $("#directory").val(directory);
+        $("#environmentName").val(environmentName);
+
+        $("#update").click(function () {
+            var flag = confirm("您确定要修改吗？");
+            if (flag) {
+                //alert($("#update_form").serialize());
+                var serviceNameVal = $("#serviceName").val();
+                var ipVal = $("#ip").val();
+                var portVal = $("#port").val();
+                var usernameVal = $("#username").val();
+                var passwordVal = $("#password").val();
+                var directoryVal = $("#directory").val();
+                var environmentNameVal = $("#environmentName").val();
+                //传入之前的serviceName+IP和修改之后的所有信息，便于修改
+                $.post("log/updateServiceDetail", {
+                    preServiceName: serviceName,
+                    preIp: ip,
+                    serviceName: serviceNameVal,
+                    ip: ipVal,
+                    port: portVal,
+                    username: usernameVal,
+                    password: passwordVal,
+                    directory: directoryVal,
+                    environmentName: environmentNameVal
+                }, function (data) {
+                    if (data > 0) {
+                        location.href = "ServiceDetailUpdate.html?serviceName=" + serviceNameVal
+                            + "&ip=" + ipVal
+                            + "&port=" + portVal
+                            + "&username=" + usernameVal
+                            + "&password=" + passwordVal
+                            + "&directory=" + directoryVal
+                            + "&environmentName=" + environmentNameVal;
+                        alert("修改成功！");
+                    } else {
+                        alert("修改失败！");
+                    }
+                });
+            } else {
+                alert("修改取消！");
+                /*location.href = "ServiceDetailUpdate.html?serviceName=" + serviceName
+                    + "&ip=" + ip
+                    + "&port=" + port
+                    + "&username=" + username
+                    + "&password=" + password
+                    + "&directory=" + directory
+                    + "&environmentName=" + environmentName;*/
+            }
+        });
+    })
+</script>
+<body>
+<form id="update_form">
+    serviceName<input id="serviceName" name="serviceName"/><br/>
+    ip<input id="ip" name="ip"/><br/>
+    port<input id="port" name="port"/><br/>
+    username<input id="username" name="username"/><br/>
+    password<input id="password" name="password"/><br/>
+    directory<input id="directory" name="directory"/><br/>
+    environmentName<input id="environmentName" name="environmentName"/><br/>
+    <button id="update">修改</button>
+</form>
+</body>
+</html>

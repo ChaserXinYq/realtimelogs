@@ -1,0 +1,12 @@
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:50 +0800] "GET /realtimelog HTTP/1.1" 302 - http-bio-8888-exec-1 0
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:50 +0800] "GET /realtimelog/ HTTP/1.1" 302 - http-bio-8888-exec-3 30
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:51 +0800] "GET /favicon.ico HTTP/1.1" 404 - http-bio-8888-exec-4 0
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:53 +0800] "POST /realtimelog/user/login HTTP/1.1" 200 40 http-bio-8888-exec-5 133
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:53 +0800] "GET /realtimelog/EnvironmentSelect.html HTTP/1.1" 304 - http-bio-8888-exec-6 2
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:54 +0800] "POST /realtimelog/log/getEnvironmentList HTTP/1.1" 200 53 http-bio-8888-exec-7 378
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:54 +0800] "GET /realtimelog/SelectServiceEnvironmentUpdate.html HTTP/1.1" 304 - http-bio-8888-exec-8 2
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:54 +0800] "POST /realtimelog/log/getEnvironmentList HTTP/1.1" 200 53 http-bio-8888-exec-9 5
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:56 +0800] "GET /realtimelog/ServiceUpdateShow.html?environmentName=pro HTTP/1.1" 304 - http-bio-8888-exec-10 2
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:56 +0800] "GET /realtimelog/js/delete.js HTTP/1.1" 304 - http-bio-8888-exec-10 2
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:56 +0800] "POST /realtimelog/log/getServiceUpdateList HTTP/1.1" 200 2993 http-bio-8888-exec-10 44
+0:0:0:0:0:0:0:1 - - [12/Oct/2020:19:36:57 +0800] "GET /realtimelog/ServiceDetailUpdate.html?serviceName=ait-exc&ip=10.97.164.152&port=22&username=yunyao&password=yunyao&directory=/data/logs/&environmentName=pro HTTP/1.1" 200 4266 http-bio-8888-exec-10 2

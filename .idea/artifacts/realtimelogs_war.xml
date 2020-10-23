@@ -1,12 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="war" name="realtimelogs:war">
     <output-path>$PROJECT_DIR$/target</output-path>
-    <properties id="maven-jee-properties">
-      <options>
-        <module>realtimelogs</module>
-        <packaging>war</packaging>
-      </options>
-    </properties>
     <root id="archive" name="realtimelog.war">
       <element id="artifact" artifact-name="realtimelogs:war exploded" />
     </root>

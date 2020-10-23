@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>服务修改列表</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+    <script src="js/jquery-3.3.1.js"></script>
+    <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/getParameter.js"></script>
+    <script src="js/delete.js"></script>
+</head>
+<script>
+
+    $(function () {
+        var environmentName = getParameter("environmentName");
+        load(environmentName, 1)
+    });
+
+    function load(environmentName, currentPage) {
+        $.post("log/getServiceUpdateList", {environmentName: environmentName, currentPage: currentPage}, function (data) {
+            //data:[pagecount:"",list:[{"serviceName":"aihanle","ip":"10.215.255.87","port":55555,"username":"yunyao","password":"yunyao","directory":"/data/logs/","environmentName":"pro"}...]]
+            var s = "";
+            for (var a = 0; a < data["list"].length; a++) {
+                var input = '<p><h3>' + data["list"][a]["serviceName"] + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+                    + data["list"][a]["ip"] + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+                    + data["list"][a]["port"] + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+                    + data["list"][a]["username"] + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+                    + data["list"][a]["password"] + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+                    + data["list"][a]["directory"] + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+                    + data["list"][a]["environmentName"] + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+                    '<a href = "ServiceDetailUpdate.html?' +
+                    'serviceName=' + data["list"][a]["serviceName"]
+                    + '&ip=' + data["list"][a]["ip"]
+                    + '&port=' + data["list"][a]["port"]
+                    + '&username=' + data["list"][a]["username"]
+                    + '&password=' + data["list"][a]["password"]
+                    + '&directory=' + data["list"][a]["directory"]
+                    + '&environmentName=' + data["list"][a]["environmentName"] + '">修改</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+                    '<a onclick="deleteServiceDetail(\'' + data["list"][a]["serviceName"] + '\',\'' + data["list"][a]["ip"] + '\',\'' + data["list"][a]["environmentName"] + '\')">删除</a>' +
+                    '</h3></p>' +
+                    '<p></p>';
+                s += input;
+            }
+            $("#wrapper").html(s);
+            //分页
+            //创建首页
+            var firstPage = '<li onclick="load(\'' + environmentName + '\',\'' + 1 + '\')"><a href="javascript:void(0)">首页</a></li>';
+            //创建上一页
+            var beforeNum = data["currentPage"] - 1;
+            if (beforeNum <= 0) {
+                beforeNum = 1;
+            }
+            var beforePage = '<li onclick="load(\'' + environmentName + '\',\'' + beforeNum + '\')"><a href="javascript:void(0)" aria-label="Previous">\n' +
+                '                <span aria-hidden="true">上一页</span>\n' +
+                '            </a></li>'
+            var lis = "";
+            lis = lis + firstPage + beforePage;
+            //创建下一页
+            var lastNum = data["currentPage"] + 1;
+            if (lastNum >= data["pageCount"]) {
+                lastNum = data["pageCount"];
+            }
+            var nextPage = '<li onclick="load(\'' + environmentName + '\',\'' + lastNum + '\')"><a href="javascript:void(0)" aria-label="Next">\n' +
+                '                <span aria-hidden="true">下一页</span>\n' +
+                '            </a></li>'
+            //创建末页
+            var lastPage = '<li onclick="load(\'' + environmentName + '\',\'' + data["pageCount"] + '\')"><a href="javascript:void(0)">末页</a></li>'
+            //前五后四页码展示
+            //定义开始位置begin，结束为止end
+            var begin;//开始位置
+            var end;//结束位置
+            //显示10个页码
+            if (data["pageCount"] <= 10) {
+                //总页码不大于10也
+                begin = 1;
+                end = data["pageCount"];
+            } else {
+                //总页码超过10
+                begin = data["currentPage"] - 5;
+                end = data["currentPage"] + 4;
+                //如果前边不够5个，后边补齐10个
+                if (begin < 1) {
+                    begin = 1;
+                    end = 10;
+                }
+                //如果后边不够4个，前边补齐
+                if (end > data["pageCount"]) {
+                    end = data["pageCount"];
+                    begin = end - 9;
+                }
+            }
+            for (var i = begin; i <= end; i++) {
+                //当前页码是否等于i
+                if (data["currentPage"] === i) {
+                    var li = '<li onclick="load(\'' + environmentName + '\',\'' + i + '\')"><a href="javascript:void(0)">' + i + '</a></li>';
+                } else {
+                    //创建页码的li
+                    var li = '<li onclick="load(\'' + environmentName + '\',\'' + i + '\')"><a href="javascript:void(0)">' + i + '</a></li>';
+                }
+                //拼接字符串
+                lis += li;
+            }
+            lis += nextPage;
+            lis += lastPage;
+            $("#pageWrapper").html(lis);
+        });
+    }
+</script>
+<body>
+<a href="ServiceDetailInsert.html">添加服务</a>
+<div id="wrapper">
+
+</div>
+<nav id="page" aria-label="Page navigation">
+    <ul id="pageWrapper" class="pagination">
+        <li><a href="#">首页</a></li>
+        <li>
+            <a href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        <li><a href="#">1</a></li>
+        <li><a href="#">2</a></li>
+        <li><a href="#">3</a></li>
+        <li><a href="#">4</a></li>
+        <li><a href="#">5</a></li>
+        <li>
+            <a href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        <li><a href="#">末页</a></li>
+    </ul>
+</nav>
+</body>
+</html>
